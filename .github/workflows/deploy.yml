@@ -1,0 +1,54 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run tests (optional)
+        run: npm test
+        continue-on-error: true
+
+      - name: Build (Vite)
+        run: npm run build
+
+      # Optional: run Supabase migrations before deploy
+      # - name: Run migrations
+      #   env:
+      #     SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      #   run: |
+      #     echo "Run your migration command here, e.g.:"
+      #     echo "psql \"$SUPABASE_DB_URL\" -f supabase/schema.sql"
+
+      - name: Pull Vercel env (production)
+        run: npx vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Build (Vercel prebuilt)
+        run: npx vercel build --prod --token "$VERCEL_TOKEN"
+
+      - name: Deploy to Vercel (prod)
+        run: npx vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
