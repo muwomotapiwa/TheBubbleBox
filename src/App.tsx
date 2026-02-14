@@ -14,7 +14,8 @@ import { Unsubscribe } from './pages/Unsubscribe';
 export function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      {/* Use the build base so routes work when served from /TheBubbleBox/ on GitHub Pages */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <div className="min-h-screen bg-[#F8F9FA]">
           <Header />
           <Routes>
