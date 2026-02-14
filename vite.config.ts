@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
-  // GitHub Pages needs a non-root base so asset URLs resolve under /TheBubbleBox/
-  base: "/TheBubbleBox/",
+  // Allow overriding base per environment (GitHub Pages, Vercel, local dev)
+  base: process.env.VITE_BASE ?? "/",
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
